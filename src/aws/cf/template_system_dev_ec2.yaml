@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Provision EC2 Instance
+Parameters:
+  KeyName:
+    Description: The EC2 Key Pair to allow SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: keyname-default # please replace.
+
+  AmiId:
+    Description: Ami ID
+    Type: String
+    Default: ami-00d101850e971728d # AmazonLinux2
+
+  InstanceType:
+    Description: Instance Type
+    Type: String
+    Default: t2.micro
+
+  SecurityGroupId:
+    Description: Security Group ID
+    Type: CommaDelimitedList
+    Default: sg-default # please replace.
+
+  SubnetId:
+    Description: Subnet ID
+    Type: String
+    Default: "subnet-default" # please replace.
+
+Resources:
+  EC2instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: !Ref KeyName
+      ImageId: !Ref AmiId
+      InstanceType: !Ref InstanceType
+      Monitoring: false
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: "true"
+          DeviceIndex: "0"
+          GroupSet: !Ref SecurityGroupId
+          SubnetId: !Ref SubnetId
+      UserData: !Base64 |
+        #!/bin/bash -ex
+        # put your script here
+      Tags:
+        - Key: Name
+          Value: ec2-cf
+
+Outputs:
+  OutputEc2PublicIp:
+    Value: !GetAtt EC2instance.PublicIp
+    Description: Public IP of EC2 instance
+
+  OutputEc2PrivateIp:
+    Value: !GetAtt EC2instance.PrivateIp
+    Description: Private IP of EC2 instance
